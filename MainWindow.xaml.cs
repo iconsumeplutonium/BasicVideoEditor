@@ -129,6 +129,14 @@ namespace VideoManip {
             }
         }
 
+        private void JumpToEndButton_Click(object sender, RoutedEventArgs e) {
+            UpdateMediaPosition(MediaPlayer.NaturalDuration.TimeSpan);
+        }
+
+        private void JumpToBeginningButton_Click(object sender, RoutedEventArgs e) {
+            UpdateMediaPosition(new TimeSpan(0));
+        }
+
     }
 
 }

@@ -21,6 +21,8 @@
 		</TextBox>
         <Button x:Name="NextFrameButton" Content="&gt;" HorizontalAlignment="Left" Height="49" Margin="292,504,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="NextFrameButton_Click"/>
         <Button x:Name="PreviousFrameButton" Content="&lt;" HorizontalAlignment="Left" Height="49" Margin="222,504,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="PreviousFrameButton_Click"/>
+        <Button x:Name="JumpToEndButton" Content="&gt;|" HorizontalAlignment="Left" Height="49" Margin="327,504,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToEndButton_Click"/>
+        <Button x:Name="JumpToBeginningButton" Content="|&lt;" HorizontalAlignment="Left" Height="49" Margin="187,504,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToBeginningButton_Click"/>
 
 
 
