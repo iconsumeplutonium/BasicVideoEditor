@@ -41,17 +41,20 @@ namespace VideoManip {
         }
 
         private void OpenFileButton_Click(object sender, RoutedEventArgs e) {
+            TrimErrorMsg.Visibility = Visibility.Hidden;
             dialog = new OpenFileDialog();
             if ((bool)dialog.ShowDialog()) {
-                FilePathBox.Text = dialog.FileName;
-                MediaPlayer.Source = new Uri(dialog.FileName);
 
-                ShellFile shellFile = ShellFile.FromFilePath(dialog.FileName);
                 try {
+                    ShellFile shellFile = ShellFile.FromFilePath(dialog.FileName);
                     frameRate = (float)(shellFile.Properties.System.Video.FrameRate.Value / 1000);
                 } catch (Exception ex) {
+                    ReportTrimError("Unsupported File Type");
                     return;
                 }
+
+                FilePathBox.Text = Directory.GetParent(dialog.FileName).FullName + "\\output.mp4";
+                MediaPlayer.Source = new Uri(dialog.FileName);
                 PlayContent();
             }
         }
@@ -73,12 +76,10 @@ namespace VideoManip {
                 PauseContent();
             else
                 PlayContent();
-
         }
 
         private void Timer_Tick(object sender, EventArgs e) {
             if (MediaPlayer.Source != null && MediaPlayer.NaturalDuration.HasTimeSpan) {
-                //UpdateMediaPosition(MediaPlayer.Position);
                 if (!timestampBox.IsFocused)
                     timestampBox.Text = TimeStampToDisplayString(MediaPlayer.Position);
             }
@@ -152,11 +153,21 @@ namespace VideoManip {
         }
 
         private void JumpToEndButton_Click(object sender, RoutedEventArgs e) {
-            UpdateMediaPosition(MediaPlayer.NaturalDuration.TimeSpan);
+            TimeSpan jumpTime = (endTime < MediaPlayer.NaturalDuration.TimeSpan) ? endTime : MediaPlayer.NaturalDuration.TimeSpan;
+            UpdateMediaPosition(jumpTime);
         }
 
         private void JumpToBeginningButton_Click(object sender, RoutedEventArgs e) {
+            TimeSpan jumpTime = (startTime > new TimeSpan(0)) ? startTime : new TimeSpan(0);
+            UpdateMediaPosition(jumpTime);
+        }
+
+        private void JumpToStartButton_Click(object sender, RoutedEventArgs e) {
             UpdateMediaPosition(new TimeSpan(0));
+        }
+
+        private void JumpToTrueEndButton_Click(object sender, RoutedEventArgs e) {
+            UpdateMediaPosition(MediaPlayer.NaturalDuration.TimeSpan);
         }
 
         private void UseCurrentStart_Click(object sender, RoutedEventArgs e) {
@@ -184,7 +195,7 @@ namespace VideoManip {
 
             Process process = new Process();
 
-            string command = $"-i \"{dialog.FileName}\" -ss {startTime} -to {endTime} -c:v libx264 -c:a copy output.mp4";
+            string command = $"-i \"{dialog.FileName}\" -ss {startTime} -to {endTime} -c:v libx264 -c:a copy {FilePathBox.Text}";
 
             process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe";
             process.StartInfo.WorkingDirectory = "C:/Users/Umair/Desktop";
