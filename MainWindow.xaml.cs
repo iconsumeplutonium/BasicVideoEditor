@@ -24,28 +24,46 @@ namespace VideoManip {
     public partial class MainWindow : Window {
         public bool isPaused = true;
         public bool isDragging = false;
+
         private DispatcherTimer timer;
         public float frameRate;
+        public TimeSpan startTime;
+        public TimeSpan endTime;
+        public OpenFileDialog dialog;
 
         public MainWindow() {
             InitializeComponent();
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Interval = TimeSpan.FromMilliseconds(250);
             timer.Tick += Timer_Tick;
+
+            TrimErrorMsg.Visibility = Visibility.Hidden;
         }
 
         private void OpenFileButton_Click(object sender, RoutedEventArgs e) {
-            OpenFileDialog dialog = new OpenFileDialog();
+            dialog = new OpenFileDialog();
             if ((bool)dialog.ShowDialog()) {
                 FilePathBox.Text = dialog.FileName;
                 MediaPlayer.Source = new Uri(dialog.FileName);
-                MediaPlayer.Play();
-                timer.Start();
-                isPaused = false;
 
                 ShellFile shellFile = ShellFile.FromFilePath(dialog.FileName);
-                frameRate = (float)(shellFile.Properties.System.Video.FrameRate.Value / 1000);
+                try {
+                    frameRate = (float)(shellFile.Properties.System.Video.FrameRate.Value / 1000);
+                } catch (Exception ex) {
+                    return;
+                }
+                PlayContent();
             }
+        }
+
+        private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e) {
+            Scrubber.Minimum = 0;
+            Scrubber.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+
+            startTime = TimeSpan.FromSeconds(0f);
+            endTime = MediaPlayer.NaturalDuration.TimeSpan;
+            StartTimeTextBox.Text = TimeStampToDisplayString(startTime);
+            EndTimeTextBox.Text = TimeStampToDisplayString(endTime);
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e) {
@@ -60,9 +78,9 @@ namespace VideoManip {
 
         private void Timer_Tick(object sender, EventArgs e) {
             if (MediaPlayer.Source != null && MediaPlayer.NaturalDuration.HasTimeSpan) {
-                Scrubber.Minimum = 0;
-                Scrubber.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                UpdateMediaPosition(MediaPlayer.Position);
+                //UpdateMediaPosition(MediaPlayer.Position);
+                if (!timestampBox.IsFocused)
+                    timestampBox.Text = TimeStampToDisplayString(MediaPlayer.Position);
             }
         }
 
@@ -86,24 +104,28 @@ namespace VideoManip {
             MediaPlayer.Position = time;
             Scrubber.Value = MediaPlayer.Position.TotalSeconds;
 
-            if (!timestampBox.IsFocused) {
-                double totalMilliseconds = Math.Round(time.TotalMilliseconds, 3);
-                double numMillies = totalMilliseconds - Math.Floor(totalMilliseconds / 1000) * 1000;
-                string formattedTimeSpan = string.Format("{0:00}:{1:00}:{2:00}.{3:000}", time.Hours, time.Minutes, time.Seconds, numMillies);
-                timestampBox.Text = formattedTimeSpan;
-            }
+            if (!timestampBox.IsFocused)
+                timestampBox.Text = TimeStampToDisplayString(time);
         } 
 
         private void PauseContent() {
             PauseButton.Content = "⏵";
             MediaPlayer.Pause();
             timer.Stop();
+            if (!timestampBox.IsFocused)
+                timestampBox.Text = TimeStampToDisplayString(MediaPlayer.Position); //force timestamp box to be displayed properly
         }
 
         private void PlayContent() {
             PauseButton.Content = "||";    //"⏸︎";
             MediaPlayer.Play();
             timer.Start();
+        }
+
+        private string TimeStampToDisplayString(TimeSpan time) {
+            double totalMilliseconds = Math.Round(time.TotalMilliseconds, 3);
+            double numMs = totalMilliseconds - Math.Floor(totalMilliseconds / 1000) * 1000;
+            return string.Format("{0:00}:{1:00}:{2:00}.{3:000}", time.Hours, time.Minutes, time.Seconds, numMs);
         }
 
         private void NextFrameButton_Click(object sender, RoutedEventArgs e) {
@@ -137,6 +159,49 @@ namespace VideoManip {
             UpdateMediaPosition(new TimeSpan(0));
         }
 
+        private void UseCurrentStart_Click(object sender, RoutedEventArgs e) {
+            startTime = MediaPlayer.Position;
+            StartTimeTextBox.Text = TimeStampToDisplayString(startTime);
+        }
+
+        private void UseCurrentEnd_Click(object sender, RoutedEventArgs e) {
+            endTime = MediaPlayer.Position;
+            EndTimeTextBox.Text = TimeStampToDisplayString(endTime);
+        }
+
+        private void TrimButton_Click(object sender, RoutedEventArgs e) {
+            TrimErrorMsg.Visibility = Visibility.Hidden;
+
+            if (startTime == endTime) {
+                ReportTrimError("Start time and end time cannot be the same.");
+                return;
+            }
+
+            if (startTime > endTime) {
+                ReportTrimError("Start time cannot be after end time.");
+                return;
+            }
+
+            Process process = new Process();
+
+            string command = $"-i \"{dialog.FileName}\" -ss {startTime} -to {endTime} -c:v libx264 -c:a copy output.mp4";
+
+            process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe";
+            process.StartInfo.WorkingDirectory = "C:/Users/Umair/Desktop";
+            process.StartInfo.Arguments = command;
+            process.StartInfo.UseShellExecute = false;//
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;//
+            //process.StartInfo.RedirectStandardError = true;
+            //process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.CreateNoWindow = true;
+            process.Start();
+            
+        }
+
+        private void ReportTrimError(string error) {
+            TrimErrorMsg.Text = error;
+            TrimErrorMsg.Visibility = Visibility.Visible;
+        }
     }
 
 }
