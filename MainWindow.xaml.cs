@@ -18,7 +18,7 @@ using Microsoft.Win32;
 using System.Windows.Threading;
 using System.Windows.Controls.Primitives;
 using Microsoft.WindowsAPICodePack.Shell;
-
+using System.ComponentModel;
 
 namespace VideoManip {
     public partial class MainWindow : Window {
@@ -30,6 +30,7 @@ namespace VideoManip {
         public TimeSpan startTime;
         public TimeSpan endTime;
         public OpenFileDialog dialog;
+        public Process process;
 
         public MainWindow() {
             InitializeComponent();
@@ -38,6 +39,7 @@ namespace VideoManip {
             timer.Tick += Timer_Tick;
 
             TrimErrorMsg.Visibility = Visibility.Hidden;
+            ProgBar.Visibility = Visibility.Hidden;
         }
 
         private void OpenFileButton_Click(object sender, RoutedEventArgs e) {
@@ -193,20 +195,65 @@ namespace VideoManip {
                 return;
             }
 
-            Process process = new Process();
-
+            process = new Process();
             string command = $"-i \"{dialog.FileName}\" -ss {startTime} -to {endTime} -c:v libx264 -c:a copy {FilePathBox.Text}";
-
             process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe";
             process.StartInfo.WorkingDirectory = "C:/Users/Umair/Desktop";
             process.StartInfo.Arguments = command;
             process.StartInfo.UseShellExecute = false;//
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;//
-            //process.StartInfo.RedirectStandardError = true;
-            //process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.CreateNoWindow = true;
-            process.Start();
+            process.StartInfo.RedirectStandardError = false;
+            process.StartInfo.RedirectStandardOutput = false;
+            process.StartInfo.CreateNoWindow = false;
+            //process.Start();
+
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += new DoWorkEventHandler(TrimProcess_DoWork);
+            worker.ProgressChanged += new ProgressChangedEventHandler(TrimProcess_UpdateProgressBar);
+            worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(TrimProcess_OnWorkerComplete);
+            ProgBar.Visibility = Visibility.Visible;
+            worker.WorkerReportsProgress = true;
+            worker.RunWorkerAsync();
+
             
+        }
+
+        private void TrimProcess_DoWork(object sender, DoWorkEventArgs e) {
+            e.Result = process.Start();
+            BackgroundWorker w = (BackgroundWorker) sender;
+
+            //StreamReader sr = process.StandardError;
+            //while (!sr.EndOfStream) {
+            //    //string line = sr.ReadLine();
+            //    //try {
+            //    //    string[] split = line.Split(' ');
+            //    //    foreach (var row in split) {
+            //    //        if (row.StartsWith("time=")) {
+            //    //            var time = row.Split('=');
+            //    //            int progress = (int) (TimeSpan.Parse(time[1]).TotalSeconds / MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds);
+            //    //            w.ReportProgress(progress);
+            //    //        }
+            //    //    }
+            //    //} catch {
+
+            //    //}
+            //}
+
+            //for (int i = 0; i <= 100; i++) {
+            //    w.ReportProgress(i);
+            //}
+            //process.WaitForExit();
+            
+        }
+
+        private void TrimProcess_UpdateProgressBar(object sender, ProgressChangedEventArgs e) {
+            ProgBar.Value = e.ProgressPercentage;
+        }
+
+        private void TrimProcess_OnWorkerComplete(object sender, RunWorkerCompletedEventArgs e) {
+            MessageBox.Show("Video Successfully Trimmed.");
+            ProgBar.Value = 0;
+            ProgBar.Visibility = Visibility.Hidden;
         }
 
         private void ReportTrimError(string error) {

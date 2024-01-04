@@ -38,6 +38,7 @@
         <TextBlock x:Name="TrimErrorMsg" HorizontalAlignment="Left" Height="44" Margin="645,141,0,0" TextWrapping="Wrap" Text="Error: super long and scary message that goes here" VerticalAlignment="Top" Width="167" TextAlignment="Center" Foreground="Red"/>
         <Button x:Name="JumpToStartButton" Content="⏮" HorizontalAlignment="Left" Height="49" Margin="152,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToStartButton_Click" FontStretch="UltraCondensed"/>
         <Button x:Name="JumpToTrueEndButton" Content="⏭" HorizontalAlignment="Left" Height="49" Margin="362,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToTrueEndButton_Click" FontStretch="UltraCondensed"/>
+        <ProgressBar x:Name="ProgBar" HorizontalAlignment="Left" Height="24" Margin="487,563,0,0" VerticalAlignment="Top" Width="325" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
 
 
 
