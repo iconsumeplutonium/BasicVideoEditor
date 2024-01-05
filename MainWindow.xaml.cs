@@ -200,15 +200,14 @@ namespace VideoManip {
 
             process = new Process();
             string command = $"-i \"{dialog.FileName}\" -ss {startTime} -to {endTime} -c:v libx264 -c:a copy {FilePathBox.Text}";
-            process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe";
-            process.StartInfo.WorkingDirectory = "C:/Users/Umair/Desktop";
+            process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe"; //TODO: allow user to set ffmpeg location manually
+            process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Desktop\\";
             process.StartInfo.Arguments = command;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.CreateNoWindow = true;
-            //process.Start();
 
             BackgroundWorker worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -224,7 +223,6 @@ namespace VideoManip {
         private void TrimProcess_DoWork(object sender, DoWorkEventArgs e) {
             e.Result = process.Start();
             BackgroundWorker w = (BackgroundWorker) sender;
-
             int finalVideoTotalFrames = (int) ((endTime - startTime).TotalSeconds * frameRate);
 
             StreamReader sr = process.StandardError;

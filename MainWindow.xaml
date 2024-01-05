@@ -13,9 +13,9 @@
 
 
 
-        <TextBox x:Name="TB_FileLocation" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" TextWrapping="Wrap" Text="Save File As" VerticalAlignment="Top" Width="130" TextAlignment="Center" FontSize="20" FontFamily="Franklin Gothic Book" SelectionOpacity="0" BorderThickness="0" VerticalContentAlignment="Center" IsReadOnly="True"/>
-        <TextBox x:Name="FilePathBox" HorizontalAlignment="Left" Height="24" Margin="140,10,0,0" VerticalAlignment="Top" Width="515" FontFamily="Franklin Gothic Book" VerticalContentAlignment="Center" FontSize="14"/>
-        <Button x:Name="OpenFileButton" Content="Open File" HorizontalAlignment="Left" Height="24" Margin="817,563,0,0" VerticalAlignment="Top" Width="59" Click="OpenFileButton_Click"/>
+        <TextBox x:Name="TB_FileLocation" HorizontalAlignment="Left" Height="24" Margin="231,10,0,0" TextWrapping="Wrap" Text="Save File As" VerticalAlignment="Top" Width="130" TextAlignment="Center" FontSize="20" FontFamily="Franklin Gothic Book" SelectionOpacity="0" BorderThickness="0" VerticalContentAlignment="Center" IsReadOnly="True"/>
+        <TextBox x:Name="FilePathBox" HorizontalAlignment="Left" Height="24" Margin="361,10,0,0" VerticalAlignment="Top" Width="515" FontFamily="Franklin Gothic Book" VerticalContentAlignment="Center" FontSize="14"/>
+        <Button x:Name="OpenFileButton" Content="Open File" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="59" Click="OpenFileButton_Click"/>
         <MediaElement x:Name="MediaPlayer" HorizontalAlignment="Center" Height="397" Margin="10,56,348.4,0" VerticalAlignment="Top" Width="528" ScrubbingEnabled="True" LoadedBehavior="Manual" IsManipulationEnabled="True" OpacityMask="Black" MediaOpened="MediaPlayer_MediaOpened"/>
         <Button x:Name="PauseButton" Content="||" HorizontalAlignment="Left" Height="49" Margin="257,490,0,0" VerticalAlignment="Top" Width="30" Click="PauseButton_Click" FontFamily="Franklin Gothic Book" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Slider x:Name="Scrubber" HorizontalAlignment="Left" Height="29" Margin="10,458,0,0" VerticalAlignment="Top" Width="528" VerticalContentAlignment="Center" Thumb.DragStarted="Scrubber_DragStarted" Thumb.DragCompleted="Scrubber_DragCompleted"/>
@@ -38,7 +38,7 @@
         <TextBlock x:Name="TrimErrorMsg" HorizontalAlignment="Left" Height="44" Margin="645,141,0,0" TextWrapping="Wrap" Text="Error: super long and scary message that goes here" VerticalAlignment="Top" Width="167" TextAlignment="Center" Foreground="Red"/>
         <Button x:Name="JumpToStartButton" Content="⏮" HorizontalAlignment="Left" Height="49" Margin="152,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToStartButton_Click" FontStretch="UltraCondensed"/>
         <Button x:Name="JumpToTrueEndButton" Content="⏭" HorizontalAlignment="Left" Height="49" Margin="362,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToTrueEndButton_Click" FontStretch="UltraCondensed"/>
-        <ProgressBar x:Name="ProgBar" HorizontalAlignment="Left" Height="24" Margin="487,563,0,0" VerticalAlignment="Top" Width="325" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+        <ProgressBar x:Name="ProgBar" HorizontalAlignment="Left" Height="24" Margin="551,563,0,0" VerticalAlignment="Top" Width="325" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
 
 
 
