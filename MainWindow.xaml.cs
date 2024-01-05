@@ -31,6 +31,7 @@ namespace VideoManip {
         public TimeSpan endTime;
         public OpenFileDialog dialog;
         public Process process;
+        public TimeSpan videoDuration;
 
         public MainWindow() {
             InitializeComponent();
@@ -62,11 +63,13 @@ namespace VideoManip {
         }
 
         private void MediaPlayer_MediaOpened(object sender, RoutedEventArgs e) {
+            videoDuration = MediaPlayer.NaturalDuration.TimeSpan;
+
             Scrubber.Minimum = 0;
-            Scrubber.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+            Scrubber.Maximum = videoDuration.TotalSeconds;
 
             startTime = TimeSpan.FromSeconds(0f);
-            endTime = MediaPlayer.NaturalDuration.TimeSpan;
+            endTime = videoDuration;
             StartTimeTextBox.Text = TimeStampToDisplayString(startTime);
             EndTimeTextBox.Text = TimeStampToDisplayString(endTime);
         }
@@ -155,7 +158,7 @@ namespace VideoManip {
         }
 
         private void JumpToEndButton_Click(object sender, RoutedEventArgs e) {
-            TimeSpan jumpTime = (endTime < MediaPlayer.NaturalDuration.TimeSpan) ? endTime : MediaPlayer.NaturalDuration.TimeSpan;
+            TimeSpan jumpTime = (endTime < videoDuration) ? endTime : videoDuration;
             UpdateMediaPosition(jumpTime);
         }
 
@@ -200,19 +203,19 @@ namespace VideoManip {
             process.StartInfo.FileName = "C:/ffmpeg/ffmpeg.exe";
             process.StartInfo.WorkingDirectory = "C:/Users/Umair/Desktop";
             process.StartInfo.Arguments = command;
-            process.StartInfo.UseShellExecute = false;//
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;//
-            process.StartInfo.RedirectStandardError = false;
-            process.StartInfo.RedirectStandardOutput = false;
-            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.CreateNoWindow = true;
             //process.Start();
 
             BackgroundWorker worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
             worker.DoWork += new DoWorkEventHandler(TrimProcess_DoWork);
             worker.ProgressChanged += new ProgressChangedEventHandler(TrimProcess_UpdateProgressBar);
             worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(TrimProcess_OnWorkerComplete);
             ProgBar.Visibility = Visibility.Visible;
-            worker.WorkerReportsProgress = true;
             worker.RunWorkerAsync();
 
             
@@ -222,32 +225,23 @@ namespace VideoManip {
             e.Result = process.Start();
             BackgroundWorker w = (BackgroundWorker) sender;
 
-            //StreamReader sr = process.StandardError;
-            //while (!sr.EndOfStream) {
-            //    //string line = sr.ReadLine();
-            //    //try {
-            //    //    string[] split = line.Split(' ');
-            //    //    foreach (var row in split) {
-            //    //        if (row.StartsWith("time=")) {
-            //    //            var time = row.Split('=');
-            //    //            int progress = (int) (TimeSpan.Parse(time[1]).TotalSeconds / MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds);
-            //    //            w.ReportProgress(progress);
-            //    //        }
-            //    //    }
-            //    //} catch {
+            int finalVideoTotalFrames = (int) ((endTime - startTime).TotalSeconds * frameRate);
 
-            //    //}
-            //}
-
-            //for (int i = 0; i <= 100; i++) {
-            //    w.ReportProgress(i);
-            //}
-            //process.WaitForExit();
-            
+            StreamReader sr = process.StandardError;
+            while (!sr.EndOfStream) {
+                //Console.WriteLine(sr.ReadLine());
+                string line = sr.ReadLine();
+                if (line.StartsWith("frame=")) {
+                    // frame=  123 fps=   234 blahblahblah
+                    // remove spaces, remove first 6 chars ("frame="), split at the "f" in "fps", then get the first value
+                    int currentFrame = int.Parse(line.Replace(" ", "").Remove(0, 6).Split('f')[0]);
+                    w.ReportProgress((int) ((float)currentFrame / finalVideoTotalFrames * 100));
+                }
+            }
         }
 
         private void TrimProcess_UpdateProgressBar(object sender, ProgressChangedEventArgs e) {
-            ProgBar.Value = e.ProgressPercentage;
+            ProgBar.Value = Math.Min(e.ProgressPercentage, ProgBar.Maximum);
         }
 
         private void TrimProcess_OnWorkerComplete(object sender, RunWorkerCompletedEventArgs e) {
