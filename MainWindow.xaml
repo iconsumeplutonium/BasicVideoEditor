@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:VideoManip"
         mc:Ignorable="d"
         Title="MainWindow" Height="626.533" Width="892.4">
-    <Grid>
+    <Grid x:Name="TheGrid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp">
 
 
 
@@ -18,7 +18,7 @@
         <Button x:Name="OpenFileButton" Content="Open File" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="59" Click="OpenFileButton_Click"/>
         <MediaElement x:Name="MediaPlayer" HorizontalAlignment="Center" Height="397" Margin="10,56,348.4,0" VerticalAlignment="Top" Width="528" ScrubbingEnabled="True" LoadedBehavior="Manual" IsManipulationEnabled="True" OpacityMask="Black" MediaOpened="MediaPlayer_MediaOpened"/>
         <Button x:Name="PauseButton" Content="||" HorizontalAlignment="Left" Height="49" Margin="257,490,0,0" VerticalAlignment="Top" Width="30" Click="PauseButton_Click" FontFamily="Franklin Gothic Book" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Slider x:Name="Scrubber" HorizontalAlignment="Left" Height="29" Margin="10,458,0,0" VerticalAlignment="Top" Width="528" VerticalContentAlignment="Center" Thumb.DragStarted="Scrubber_DragStarted" Thumb.DragCompleted="Scrubber_DragCompleted"/>
+        <Slider x:Name="Scrubber" HorizontalAlignment="Left" Height="29" Margin="10,458,0,0" VerticalAlignment="Top" Width="528" VerticalContentAlignment="Center" Thumb.DragStarted="Scrubber_DragStarted" Thumb.DragCompleted="Scrubber_DragCompleted" TickFrequency="0"/>
         <TextBox x:Name="timestampBox" KeyDown="timestampBox_KeyDown" HorizontalAlignment="Left" Height="26" Margin="152,544,0,0" TextWrapping="Wrap" Text="00:00:00" VerticalAlignment="Top" Width="240" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="16" IsManipulationEnabled="True" TextChanged="timestampBox_TextChanged" ForceCursor="True">
             <TextBox.DataContext>
                 <KeyTime>Uniform</KeyTime>
@@ -39,6 +39,25 @@
         <Button x:Name="JumpToStartButton" Content="⏮" HorizontalAlignment="Left" Height="49" Margin="152,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToStartButton_Click" FontStretch="UltraCondensed"/>
         <Button x:Name="JumpToTrueEndButton" Content="⏭" HorizontalAlignment="Left" Height="49" Margin="362,490,0,0" VerticalAlignment="Top" Width="30" FontSize="20" Click="JumpToTrueEndButton_Click" FontStretch="UltraCondensed"/>
         <ProgressBar x:Name="ProgBar" HorizontalAlignment="Left" Height="24" Margin="551,563,0,0" VerticalAlignment="Top" Width="325" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+
+        <Canvas x:Name="SelectionRectParentCanvas">
+            <ListBox Name="SelectionBox" Background="{x:Null}" BorderBrush="Black" BorderThickness="1">
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <Grid>
+                            <Rectangle StrokeDashArray="4 2" Stroke="Black" StrokeThickness="1">
+                                <Rectangle.Effect>
+                                    <DropShadowEffect ShadowDepth="0" Color="White" BlurRadius="5" />
+                                </Rectangle.Effect>
+                            </Rectangle>
+
+                            <ItemsPresenter/>
+                        </Grid>
+                    </ControlTemplate>
+                </ListBox.Template>
+                <!--Thumb Name="ResizeThumb" Canvas.Right="0" Canvas.Bottom="0" Width="10" Height="10" Background="Red" DragDelta="ResizeThumb_DragDelta"/-->
+            </ListBox>
+        </Canvas>
 
 
 

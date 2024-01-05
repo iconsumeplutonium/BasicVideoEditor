@@ -24,6 +24,9 @@ namespace VideoManip {
     public partial class MainWindow : Window {
         public bool isPaused = true;
         public bool isDragging = false;
+        public bool isMouseDown = false;
+        public bool isDraggingSelectionRect = false;
+        public bool hasBoxBeenDrawn = false;
 
         private DispatcherTimer timer;
         public float frameRate;
@@ -32,6 +35,7 @@ namespace VideoManip {
         public OpenFileDialog dialog;
         public Process process;
         public TimeSpan videoDuration;
+        public Point mouseDownOriginalPos;
 
         public MainWindow() {
             InitializeComponent();
@@ -41,6 +45,7 @@ namespace VideoManip {
 
             TrimErrorMsg.Visibility = Visibility.Hidden;
             ProgBar.Visibility = Visibility.Hidden;
+            SelectionBox.Visibility = Visibility.Hidden;
         }
 
         private void OpenFileButton_Click(object sender, RoutedEventArgs e) {
@@ -251,6 +256,158 @@ namespace VideoManip {
         private void ReportTrimError(string error) {
             TrimErrorMsg.Text = error;
             TrimErrorMsg.Visibility = Visibility.Visible;
+        }
+
+        private void TheGrid_MouseDown(object sender, MouseEventArgs e) {
+            
+        }
+
+        //private void MediaPlayer_MouseDown(object sender, MouseButtonEventArgs e) {
+        //    //isMouseDown = true;
+        //    //mouseDownOriginalPos = e.GetPosition(MediaPlayer);
+
+        //    //Console.WriteLine($"mouse is down, at pos {mouseDownOriginalPos}");
+
+        //    ////TheGrid.CaptureMouse();
+        //    ////e.Handled = true;
+        //    ////SelectionRect.Visibility = Visibility.Visible;
+        //    ////SelectionRect.RenderTransform.
+        //    ////DragSelectionCanvas.Visibility = Visibility.Visible;
+        //    //Canvas.SetLeft(SelectionBox, mouseDownOriginalPos.X);
+        //    //Canvas.SetTop(SelectionBox, mouseDownOriginalPos.Y);
+
+
+        //    isMouseDown = true;
+        //    mouseDownOriginalPos = e.GetPosition((UIElement)SelectionBox.Parent);
+
+        //    Console.WriteLine($"mouse is down, at pos {mouseDownOriginalPos}");
+
+        //    Canvas.SetLeft(SelectionBox, mouseDownOriginalPos.X);
+        //    Canvas.SetTop(SelectionBox, mouseDownOriginalPos.Y);
+
+        //}
+
+        //private void MediaPlayer_MouseMove(object sender, MouseEventArgs e) {
+        //    Point mousePos = e.GetPosition(this);
+        //    if (isMouseDown) {
+        //        Console.WriteLine($"Mouse in motion, currently at {mousePos}");
+
+
+
+
+        //    }
+
+        //    //if (isDraggingSelectionRect) {
+        //    //    UpdateDragSelectionRect(mouseDownOriginalPos, mousePos);
+        //    //    e.Handled = true;
+
+        //    //} else if (isMouseDown) {
+        //    //    double dragDistance = Math.Abs((mousePos - mouseDownOriginalPos).Length);
+        //    //    if (dragDistance > 0.5f) {
+        //    //        isDraggingSelectionRect = true;
+        //    //        //SelectionBox.SelectedItem.Clear();
+        //    //        InitDragSelectionRect(mouseDownOriginalPos, mousePos);
+        //    //    }
+        //    //}
+
+        //    //e.Handled = true;
+        //}
+
+        //private void InitDragSelectionRect(Point pt1, Point pt2) {
+        //    UpdateDragSelectionRect(pt1, pt2);
+
+        //    //DragSelectionCanvas.Visibility = Visibility.Visible;
+        //}
+
+        //private void UpdateDragSelectionRect(Point pt1, Point pt2) {
+        //    double width = Math.Abs(pt1.X - pt2.X);
+        //    double height = Math.Abs(pt1.Y - pt2.Y);
+
+        //    Canvas.SetLeft(SelectionBox, mouseDownOriginalPos.X);
+        //    Canvas.SetTop(SelectionBox, mouseDownOriginalPos.Y);
+        //    SelectionBox.Width = width;
+        //    SelectionBox.Height = height;
+        //}
+
+        //private void MediaPlayer_MouseUp(object sender, MouseButtonEventArgs e) {
+        //    //if (e.ChangedButton == MouseButton.Left) {
+        //    //    if (isDraggingSelectionRect) {
+        //    //        //
+        //    //        // Drag selection has ended, apply the 'selection rectangle'.
+        //    //        //
+
+        //    //        isDraggingSelectionRect = false;
+        //    //        ApplyDragSelectionRect();
+
+        //    //        e.Handled = true;
+        //    //    }
+
+        //    //    if (isMouseDown) {
+        //    //        isMouseDown = false;
+        //    //        ReleaseMouseCapture();
+
+        //    //        e.Handled = true;
+        //    //    }
+        //    //}
+        //    Console.WriteLine($"mouse released at {e.GetPosition(this)}");
+        //    isMouseDown = false;
+        //    //DragSelectionCanvas.Visibility = Visibility.Collapsed;
+
+        //}
+
+
+        //private void ApplyDragSelectionRect() {
+        //    SelectionBox.Visibility = Visibility.Collapsed;
+
+        //    double x = Canvas.GetLeft(SelectionBox);
+        //    double y = Canvas.GetTop(SelectionBox);
+        //    double width = SelectionBox.Width;
+        //    double height = SelectionBox.Height;
+        //    Rect dragRect = new Rect(x, y, width, height);
+
+        //    //
+        //    // Inflate the drag selection-rectangle by 1/10 of its size to 
+        //    // make sure the intended item is selected.
+        //    //
+        //    dragRect.Inflate(width / 10, height / 10);
+        //}
+
+
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e) {
+            isMouseDown = true;
+            mouseDownOriginalPos = e.GetPosition((UIElement)SelectionBox.Parent);
+            SelectionBox.Visibility = Visibility.Visible;
+            if (!hasBoxBeenDrawn) {
+                Canvas.SetLeft(SelectionBox, mouseDownOriginalPos.X);
+                Canvas.SetTop(SelectionBox, mouseDownOriginalPos.Y);
+            }
+        }
+
+        private void Grid_MouseMove(object sender, MouseEventArgs e) {
+            Point mousePos = e.GetPosition((UIElement)SelectionBox.Parent);
+            double distanceFromClick = Math.Abs((mousePos - mouseDownOriginalPos).Length);
+
+            if (isMouseDown && MediaPlayer.IsMouseOver && distanceFromClick > 5f) {
+
+                double x = Math.Abs(mousePos.X - mouseDownOriginalPos.X);
+                double y = Math.Abs(mousePos.Y - mouseDownOriginalPos.Y);
+
+                //fix negative stuff here
+                SelectionBox.Width = (mouseDownOriginalPos.X + x > MediaPlayer.ActualWidth) ? MediaPlayer.ActualWidth - mouseDownOriginalPos.X : x;
+                SelectionBox.Height = (mouseDownOriginalPos.Y + y > MediaPlayer.ActualHeight) ? MediaPlayer.ActualHeight - mouseDownOriginalPos.Y : y;
+
+                hasBoxBeenDrawn = true;
+            }
+        }
+
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e) {
+            isMouseDown = false;
+        }
+
+        private void ResizeThumb_DragDelta(object sender, DragDeltaEventArgs e) {
+            //SelectionBox.Width = Math.Max(0, e.HorizontalChange + SelectionBox.Width);
+            //SelectionBox.Height = Math.Max(0, e.VerticalChange + SelectionBox.Height);
         }
     }
 
